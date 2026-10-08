@@ -148,9 +148,4 @@ python3 code/generate_final_models.py
 
 ---
 
-## 5. Deliverables Verification
-- **Prediction Files:**
-  - Located in `predictions/` and mirrored at repository root.
-  - Formatted strictly to benchmark specifications (header `y`, 1000 float rows, 0 null values).
-- **Report:**
-  - `report/report.pdf` (and root `report.pdf`): 5-page publication-quality write-up with theory, rationale, and diagnostics.
+
