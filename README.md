@@ -138,6 +138,8 @@ An audit of coordinate clamping at domain boundaries ($\pm 1.0$) reveals an acut
 | Ridge ($\alpha=1.2$) | 11 | 363 | 0.2841 | 0.9947 | 363 | Controlled boundary shrinkage |
 | OLS | 12 | 454 | 7.7129 | 0.8603 | 454 | Ill-conditioned spatial polynomials |
 | Ridge ($\alpha=1.8$) | 12 | 454 | 0.2706 | 0.9950 | 454 | Robust regularized asymptote |
+| Ridge ($\alpha=1.5$) | 14 | 679 | 0.2738 | 0.9949 | 679 | Degradation begins ($p=679$) |
+| Ridge ($\alpha=5.0$) | 20 | 1770 | 0.2938 | 0.9946 | 1770 | Prompt upper bound ceiling ($p=1770 > N_{\text{train}}$) |
 
 ---
 

@@ -34,10 +34,10 @@ def main():
     kf = KFold(n_splits=10, shuffle=True, random_state=42)
 
     print("=" * 70)
-    print("PHASE 2 DEEP DIVE: RIDGE & LASSO SENSITIVITY (DEGREES 6 TO 12)")
+    print("PHASE 2 DEEP DIVE: RIDGE & LASSO SENSITIVITY (DEGREES 7 TO 20)")
     print("=" * 70)
 
-    for deg in [7, 8, 9, 10, 11, 12]:
+    for deg in [7, 8, 9, 10, 11, 12, 14, 20]:
         poly = PolynomialFeatures(degree=deg, include_bias=False)
         X2_poly = poly.fit_transform(X2)
         n_feat = X2_poly.shape[1]
@@ -51,7 +51,7 @@ def main():
         # 2. Ridge fine grid
         best_r_mse = float('inf')
         best_r_alpha = None
-        for a in [0.01, 0.05, 0.1, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0]:
+        for a in [0.01, 0.05, 0.1, 0.3, 0.5, 0.7, 1.0, 1.5, 2.0, 3.0, 5.0]:
             r_mses = []
             for tr, te in kf.split(X2):
                 s = StandardScaler()
