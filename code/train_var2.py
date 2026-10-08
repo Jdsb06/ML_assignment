@@ -111,18 +111,16 @@ def train_and_evaluate(train_path=None, test_path=None, out_path=None, degree=10
     test_preds = final_pipeline.predict(X_test)
     pred_df = pd.DataFrame({'y': test_preds})
 
+    # Save to canonical destination and root
     target_paths = [
         out_file,
-        REPO_ROOT / f"{ROLL_NO}_pred_var2.csv",
-        REPO_ROOT / "predictions" / f"{ROLL_NO}_pred_var2.csv",
-        REPO_ROOT / "data" / f"{ROLL_NO}_pred_var2.csv",
-        REPO_ROOT / ROLL_NO / f"{ROLL_NO}_pred_var2.csv"
+        REPO_ROOT / f"{ROLL_NO}_pred_var2.csv"
     ]
     for p in target_paths:
         p.parent.mkdir(parents=True, exist_ok=True)
         pred_df.to_csv(p, index=False)
 
-    print(f"Predictions saved to: {out_file} (and root / predictions mirrors)")
+    print(f"Predictions saved to: {out_file} (and root mirror)")
     print(f"Prediction count: {len(pred_df)} rows")
     print(f"Prediction stats: Mean={test_preds.mean():.4f}, Std={test_preds.std():.4f}, Min={test_preds.min():.4f}, Max={test_preds.max():.4f}")
     print("=" * 70)

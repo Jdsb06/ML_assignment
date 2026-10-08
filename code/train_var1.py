@@ -37,7 +37,7 @@ def resolve_path(relative_candidate):
     return candidates[0]
 
 
-def train_and_evaluate(train_path=None, test_path=None, out_path=None, degree=5, alpha=0.007, n_splits=10):
+def train_and_evaluate(train_path=None, test_path=None, out_path=None, degree=5, alpha=0.015, n_splits=10):
     train_file = Path(train_path) if train_path else resolve_path(f"{ROLL_NO}_train_var1.csv")
     test_file = Path(test_path) if test_path else resolve_path(f"{ROLL_NO}_test_var1.csv")
     out_file = Path(out_path) if out_path else REPO_ROOT / "predictions" / f"{ROLL_NO}_pred_var1.csv"
@@ -114,19 +114,16 @@ def train_and_evaluate(train_path=None, test_path=None, out_path=None, degree=5,
     test_preds = final_pipeline.predict(X_test)
     pred_df = pd.DataFrame({'y': test_preds})
 
-    # Save to primary destination and standard mirrors
+    # Save to canonical destination and root
     target_paths = [
         out_file,
-        REPO_ROOT / f"{ROLL_NO}_pred_var1.csv",
-        REPO_ROOT / "predictions" / f"{ROLL_NO}_pred_var1.csv",
-        REPO_ROOT / "data" / f"{ROLL_NO}_pred_var1.csv",
-        REPO_ROOT / ROLL_NO / f"{ROLL_NO}_pred_var1.csv"
+        REPO_ROOT / f"{ROLL_NO}_pred_var1.csv"
     ]
     for p in target_paths:
         p.parent.mkdir(parents=True, exist_ok=True)
         pred_df.to_csv(p, index=False)
 
-    print(f"Predictions saved to: {out_file} (and root / predictions mirrors)")
+    print(f"Predictions saved to: {out_file} (and root mirror)")
     print(f"Prediction count: {len(pred_df)} rows")
     print(f"Prediction stats: Mean={test_preds.mean():.4f}, Std={test_preds.std():.4f}, Min={test_preds.min():.4f}, Max={test_preds.max():.4f}")
     print("=" * 70)
@@ -139,7 +136,7 @@ if __name__ == '__main__':
     parser.add_argument('--test', type=str, default=None, help="Path to testing CSV")
     parser.add_argument('--out', type=str, default=None, help="Output prediction CSV path")
     parser.add_argument('--degree', type=int, default=5, help="Polynomial degree")
-    parser.add_argument('--alpha', type=float, default=0.007, help="L1 Lasso regularization parameter")
+    parser.add_argument('--alpha', type=float, default=0.015, help="L1 Lasso regularization parameter")
     args = parser.parse_args()
 
     train_and_evaluate(args.train, args.test, args.out, degree=args.degree, alpha=args.alpha)

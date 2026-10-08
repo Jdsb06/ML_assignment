@@ -26,8 +26,8 @@ def main():
     print(f"RUNNING COMPLETE PREDICTION PIPELINE FOR {ROLL_NO}")
     print("=" * 75)
 
-    # 1. Run var1 pipeline (Degree 5 Lasso, alpha=0.007)
-    run_var1(degree=5, alpha=0.007)
+    # 1. Run var1 pipeline (Degree 5 Lasso, alpha=0.015)
+    run_var1(degree=5, alpha=0.015)
 
     # 2. Run var2 pipeline (Degree 10 Ridge, alpha=0.7)
     run_var2(degree=10, alpha=0.7)
