@@ -9,7 +9,7 @@
 
 ## 1. Overview
 
-This project implements optimal polynomial regression models to solve two distinct real-world geothermal engineering challenges using personalized datasets for roll number **`IMT2024022`**:
+This project implements optimal polynomial regression models to solve two distinct real-world geothermal energy engineering problems using personalized datasets for roll number **`IMT2024022`**:
 
 1. **Phase 1: Power Plant Steam Turbine Optimization (`var1`)**
    - **Goal:** Predict the **Net Power Score ($y$)** of a multi-stage steam turbine from 6 operational valve and turbine percentage deviation parameters ($x_1, \dots, x_6$).
@@ -25,34 +25,55 @@ This project implements optimal polynomial regression models to solve two distin
 
 ---
 
-## 2. Repository Structure
+## 2. Structured Directory Layout
+
+The repository is modularly structured into dedicated directories for data, code, predictions, reports, and visualization figures:
 
 ```text
 ML_assignment/
-├── figures/                            # High-resolution evaluation plots
-│   ├── actual_vs_predicted.png         # Out-of-fold actual vs predicted scatter plots
-│   ├── model_comparison_degrees.png    # Validation error vs degree curves (OLS vs Ridge vs Lasso)
-│   ├── residual_analysis.png           # Gaussian residual distributions
-│   └── train_test_distribution.png     # Train vs test prediction distribution alignment
-├── IMT2024022/                         # Student dataset folder
+├── data/                               # Dataset files
 │   ├── IMT2024022_train_var1.csv       # Training dataset for Phase 1 (N=1000, 6 features)
 │   ├── IMT2024022_test_var1.csv        # Testing dataset for Phase 1 (N=1000)
 │   ├── IMT2024022_train_var2.csv       # Training dataset for Phase 2 (N=1000, 3 features)
 │   ├── IMT2024022_test_var2.csv        # Testing dataset for Phase 2 (N=1000)
-│   ├── IMT2024022_pred_var1.csv        # Final test predictions for Phase 1
-│   └── IMT2024022_pred_var2.csv        # Final test predictions for Phase 2
-├── IMT2024022_pred_var1.csv            # Root copy of test predictions for Phase 1
-├── IMT2024022_pred_var2.csv            # Root copy of test predictions for Phase 2
-├── report.pdf                          # Comprehensive 4-page technical report (PDF)
-├── report.tex                          # LaTeX source code for the report
-├── train_var1.py                       # Self-contained training & inference script for Phase 1
-├── train_var2.py                       # Self-contained training & inference script for Phase 2
-├── generate_predictions.py             # End-to-end execution & validation script
-├── generate_final_models.py            # Generates figures, predictions, and validation logs
-├── eda.py                              # Exploratory data analysis script
+│   └── sample_submission.csv           # Benchmark submission format sample
+│
+├── code/                               # Core Python implementation scripts
+│   ├── train_var1.py                   # Self-contained training & inference script for Phase 1
+│   ├── train_var2.py                   # Self-contained training & inference script for Phase 2
+│   ├── generate_predictions.py         # End-to-end execution & validation script
+│   ├── generate_final_models.py        # Generates figures, predictions, and validation logs
+│   └── eda.py                          # Exploratory data analysis script
+│
+├── predictions/                        # Model prediction outputs
+│   ├── IMT2024022_pred_var1.csv        # Final test predictions for Phase 1 (1000 rows, header 'y')
+│   └── IMT2024022_pred_var2.csv        # Final test predictions for Phase 2 (1000 rows, header 'y')
+│
+├── figures/                            # High-resolution evaluation figures (300 DPI)
+│   ├── actual_vs_predicted.png         # Out-of-fold actual vs predicted scatter plots
+│   ├── model_comparison_degrees.png    # Validation error vs degree curves (OLS vs Ridge vs Lasso)
+│   ├── residual_analysis.png           # Gaussian residual distributions
+│   └── train_test_distribution.png     # Train vs test prediction distribution alignment
+│
+├── report/                             # Project report documentation
+│   ├── report.tex                      # LaTeX source code for the 5-page report
+│   ├── report.pdf                      # Compiled PDF report
+│   └── figures/                        # Linked report figures
+│
+├── IMT2024022/                         # Original roll-number folder (retained for backward compatibility)
+│   ├── IMT2024022_train_var1.csv
+│   ├── IMT2024022_test_var1.csv
+│   ├── IMT2024022_train_var2.csv
+│   ├── IMT2024022_test_var2.csv
+│   ├── IMT2024022_pred_var1.csv
+│   └── IMT2024022_pred_var2.csv
+│
+├── report.pdf                          # Root copy of the report PDF for easy grading access
+├── IMT2024022_pred_var1.csv            # Root copy of Phase 1 predictions for grader convenience
+├── IMT2024022_pred_var2.csv            # Root copy of Phase 2 predictions for grader convenience
 ├── requirements.txt                    # Python package dependencies
-├── .gitignore                          # Git ignore configuration
-└── README.md                           # Project documentation
+├── .gitignore                          # Git ignore rules
+└── README.md                           # Documentation
 ```
 
 ---
@@ -78,6 +99,7 @@ ML_assignment/
 | OLS | 4 | 34 | 3.958 | 0.9287 | Rapid error reduction |
 | OLS | 6 | 83 | 0.558 | 0.9900 | High fidelity |
 | OLS | 8 | 164 | 0.2709 | 0.9950 | Parsimonious baseline |
+| OLS | 8 | 164 | 0.2691 | 0.9950 | Mild shrinkage |
 | OLS | 10 | 285 | 0.4281 | 0.9923 | Onset of overfitting |
 | OLS | 11 | 363 | 2.4747 | 0.9562 | High variance instability |
 | OLS | 12 | 454 | 10.412 | 0.8168 | Severe ill-conditioning |
@@ -89,7 +111,7 @@ ML_assignment/
 ## 4. Setup and Reproduction
 
 ### Prerequisites
-- Python 3.10+ (or Python 3.14 venv)
+- Python 3.10+ (or Python 3.14)
 - `pip` package manager
 
 ### Environment Setup
@@ -107,27 +129,28 @@ pip install -r requirements.txt
 ```
 
 ### Reproducing Predictions
-To generate and verify predictions for both Phase 1 and Phase 2:
-```bash
-python3 generate_predictions.py
-```
+You can run the scripts either from the repository root or from inside the `code/` directory:
 
-To run individual phases:
 ```bash
-# Run Phase 1
-python3 train_var1.py --degree 5 --alpha 0.007
+# End-to-end prediction generation & verification
+python3 code/generate_predictions.py
 
-# Run Phase 2
-python3 train_var2.py --degree 10 --alpha 0.7
-```
+# Or run individual models:
+python3 code/train_var1.py --degree 5 --alpha 0.007
+python3 code/train_var2.py --degree 10 --alpha 0.7
 
-To regenerate all evaluation figures:
-```bash
-python3 generate_final_models.py
+# Run Exploratory Data Analysis
+python3 code/eda.py
+
+# Regenerate evaluation plots and model checkpoints
+python3 code/generate_final_models.py
 ```
 
 ---
 
 ## 5. Deliverables Verification
-- Prediction files adhere strictly to `sample_submission.csv` format (header `y`, 1000 float rows, zero missing values).
-- PDF report compiled via LaTeX (`report.pdf`) provides rigorous theoretical justification and empirical analysis.
+- **Prediction Files:**
+  - Located in `predictions/` and mirrored at repository root.
+  - Formatted strictly to benchmark specifications (header `y`, 1000 float rows, 0 null values).
+- **Report:**
+  - `report/report.pdf` (and root `report.pdf`): 5-page publication-quality write-up with theory, rationale, and diagnostics.
