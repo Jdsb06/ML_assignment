@@ -1,6 +1,6 @@
 \documentclass[10pt,twocolumn]{article}
 \usepackage[utf8]{inputenc}
-\usepackage[margin=0.68in,top=0.68in,bottom=0.68in]{geometry}
+\usepackage[margin=0.65in,top=0.65in,bottom=0.65in]{geometry}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -10,7 +10,13 @@
 \usepackage{titlesec}
 \usepackage{caption}
 \usepackage{float}
-\captionsetup{skip=4pt,font=small}
+\usepackage{enumitem}
+\setlist{noitemsep,topsep=1.5pt,parsep=0pt,partopsep=0pt}
+\captionsetup{skip=3pt,font=small}
+
+\setlength{\textfloatsep}{5pt plus 1pt minus 1pt}
+\setlength{\floatsep}{5pt plus 1pt minus 1pt}
+\setlength{\intextsep}{5pt plus 1pt minus 1pt}
 
 \hypersetup{
     colorlinks=true,
@@ -19,8 +25,10 @@
     urlcolor=blue!70!black
 }
 
-\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
-\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.4em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.4em}{}
+\titlespacing*{\section}{0pt}{4pt plus 1pt minus 1pt}{2pt plus 1pt minus 1pt}
+\titlespacing*{\subsection}{0pt}{3pt plus 1pt minus 1pt}{1.5pt plus 1pt minus 1pt}
 
 \title{\textbf{\Large Polynomial Regression for Renewable Geothermal Systems: \\ High-Dimensional Surface Optimization and Deep Reservoir Mapping}}
 \author{\textbf{Jashandeep Singh Bedi} \quad (Roll No: \texttt{IMT2024022}) \\
@@ -128,7 +136,11 @@ A rigorous preliminary audit was conducted on both datasets corresponding to rol
     \item \textbf{Data Integrity:} Neither dataset contains missing, null, or infinite values. Both training sets contain exactly $1000$ observations; both test sets contain $1000$ observations.
     \item \textbf{Phase 1 Domain:} Feature variables $x_1$ through $x_6$ are bounded within $[-1.000, 1.000]$ with empirical means close to zero ($\mu_{x_j} \in [-0.044, -0.001]$) and standard deviations $\approx 0.71$. The target $y$ has mean $\mu = 0.8966$, standard deviation $\sigma = 3.1867$, spanning $[-8.235, 13.248]$.
     \item \textbf{Phase 2 Domain:} Coordinate offsets $x_1, x_2, x_3$ are bounded within $[-1.000, 1.000]$ with means $\approx 0.00$ and standard deviations $\approx 0.68$. The target $y$ exhibits higher dynamic range: mean $\mu = 2.3426$, standard deviation $\sigma = 7.4816$, spanning $[-29.710, 39.179]$.
-    \item \textbf{Boundary Clamping Covariate Shift in Phase 1:} An exact coordinate-level boundary audit reveals that in Phase~1, $31.17\%$ of feature coordinates in the training set ($1870/6000$) are clamped at the domain limits $\pm 1.0$, whereas in the test set, $51.25\%$ of coordinates ($3075/6000$) are clamped at $\pm 1.0$. This boundary concentration constitutes an empirical covariate shift toward domain extremes. Because high-degree polynomial basis terms evaluate to their peak magnitude at $\pm 1.0$, under-regularized models risk extreme extrapolation errors. For Phase~2, both training and test spatial coordinates are uniformly distributed throughout $[-1, 1]$ without boundary clamping.
+    \item \textbf{Boundary Clamping in Both Phases \& Phase 1 Covariate Shift:} A systematic coordinate audit reveals that boundary clamping at $\pm 1.0$ is present in \emph{both} datasets:
+    \begin{itemize}\setlength{\itemsep}{1pt}
+        \item In \textbf{Phase 2}, coordinate clamping occurs symmetrically at domain boundaries: $26.17\%$ of coordinates ($785/3000$) in train and $24.83\%$ ($745/3000$) in test are clamped at $\pm 1.0$. The observation-level distribution across clamping strata $k \in \{0, 1, 2, 3\}$ is remarkably balanced ($40.5\%$ vs $42.9\%$ at $k=0$, $42.1\%$ vs $41.5\%$ at $k=1$, $15.8\%$ vs $13.8\%$ at $k=2$, and $1.6\%$ vs $1.8\%$ at $k=3$), indicating absence of significant covariate shift across partitions.
+        \item In \textbf{Phase 1}, however, an acute covariate shift exists: $31.17\%$ of training coordinates ($1870/6000$) are clamped at $\pm 1.0$, whereas in the test set, clamping surges to $51.25\%$ ($3075/6000$). At the observation level, only $28.7\%$ of training points exhibit $\ge 3$ clamped coordinates, whereas $66.5\%$ of test points reside in these high-boundary strata. Because multivariate monomials evaluate to extreme amplitudes at $\pm 1.0$, unregularized models face severe boundary extrapolation risk.
+    \end{itemize}
 \end{itemize}
 
 \section{Experimental Methodology}
@@ -186,6 +198,39 @@ The thermodynamic behavior of a multi-stage steam turbine involves non-linear st
 Lasso's $L_1$ penalty performs effective feature selection under high collinearity, retaining \textbf{97 non-zero coefficients} on the full training dataset (with an average of 97.1 active features across CV folds) while zeroing out uninformative interactions. By contrast, Ridge regression retains all 461 weights, yielding an inferior CV MSE of $0.5063$. 
 
 Crucially, to safeguard against the observed boundary clamping covariate shift (where 51.25\% of test coordinates reside at $\pm 1.0$ vs. 31.17\% in train), we conducted an extreme-point boundary holdout evaluation: training on instances with $\le 2$ clamped coordinates and evaluating on instances with $\ge 3$ clamped coordinates. Whereas $\alpha=0.007$ yielded a boundary holdout MSE of $0.5309$, tuning to $\alpha = 0.015$ reduced boundary holdout error to $\mathbf{0.4750}$ (a 10.5\% improvement) with negligible impact on overall CV MSE ($0.3314$ vs. $0.3205$). This calibrated shrinkage directly suppresses unconstrained polynomial flaring at domain boundary extremes. Thus, \textbf{Degree 5 with Lasso ($\alpha = 0.015$)} is the optimal architecture for Phase~1.
+
+\subsection{Stratified Clamping Error \& Importance Weighting}
+To rigorously quantify the impact of boundary coordinate clamping, Table~\ref{tab:var1_strat} stratifies out-of-fold cross-validation error by the number of clamped coordinates $k \in \{0, \dots, 6\}$. 
+
+\begin{table}[h]
+\centering
+\caption{\textbf{Phase 1: Stratified CV Error by Clamped Coordinates}}
+\label{tab:var1_strat}
+\resizebox{\columnwidth}{!}{
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Strata ($k$)} & \textbf{Train \% ($N$)} & \textbf{Test \% ($N$)} & \textbf{Lasso MSE} & \textbf{OLS MSE} \\
+\midrule
+$k=0$ (Interior) & 11.2\% (112) & 1.1\% (11) & 0.2312 & 0.5155 \\
+$k=1$ & 30.6\% (306) & 8.6\% (86) & 0.3025 & 0.7617 \\
+$k=2$ & 29.5\% (295) & 23.8\% (238) & 0.3078 & 1.2026 \\
+$k=3$ & 19.2\% (192) & 29.3\% (293) & 0.3758 & 2.8806 \\
+$k=4$ & 7.9\% (79) & 24.6\% (246) & 0.5506 & 1.4410 \\
+$k=5$ & 1.4\% (14) & 10.6\% (106) & 0.4250 & 1.7151 \\
+$k=6$ (Boundary) & 0.2\% (2) & 2.0\% (20) & 0.2737 & 0.4236 \\
+\midrule
+\textbf{Overall CV} & \multicolumn{2}{c}{Unweighted 10-Fold CV} & \textbf{0.3314} & \textbf{1.3374} \\
+\textbf{Importance-Wt.} & \multicolumn{2}{c}{Test Distribution Reweighted} & \textbf{0.3979} & \textbf{1.7462} \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+Prediction error generally elevates as coordinates approach domain boundaries ($k=0$ has MSE $0.2312$, rising to $0.5506$ at $k=4$). Because training data is dominated by interior points ($71.3\%$ with $k \le 2$), \textbf{standard CV MSE is inherently optimistic for the test distribution}, where $66.5\%$ of points have $k \ge 3$. Applying importance weighting using test frequencies $P_{\text{test}}(k)$:
+\begin{equation}
+\text{MSE}_{\text{IW}} = \sum_{k=0}^6 P_{\text{test}}(k) \cdot \text{MSE}_k = \mathbf{0.3979}
+\end{equation}
+indicates that expected test error is $\approx 20.1\%$ higher than nominal CV. By contrast, unregularized OLS inflates to $\text{MSE}_{\text{IW}} = 1.7462$, demonstrating that Lasso shrinkage is critical for mitigating boundary divergence.
 
 \begin{figure}[t]
     \centering

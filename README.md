@@ -52,6 +52,7 @@ ML_assignment/
 │       ├── deep_dive.py                # CV stability & boundary clamping analysis for Phase 1
 │       ├── deep_dive_var2.py           # Multi-seed evaluation of Degree 8 vs 10 for Phase 2
 │       ├── final_tuning.py             # Fine-grained alpha hyperparameter tuning
+│       ├── clamping_stratified_analysis.py # Stratified clamping error & importance weighting analysis
 │       ├── run_systematic_benchmark.py # Runs reproducible 10-fold CV benchmark for all models
 │       ├── var1_benchmark.csv          # Canonical benchmark CSV for Phase 1
 │       └── var2_benchmark.csv          # Canonical benchmark CSV for Phase 2
@@ -99,6 +100,27 @@ All models are evaluated on the exact same 10-fold cross-validation splits (`ran
 | OLS | 6 | 923 | 2342.97 | -220.61 | 923 | Singular Gram matrix ($p=923 > N_{\text{fold}}=900$) |
 | Ridge ($\alpha=30$) | 6 | 923 | 0.6437 | 0.9348 | 923 | Ridge regularizes ill-conditioned Gram matrix |
 | Lasso ($\alpha=0.02$) | 6 | 923 | 0.3611 | 0.9639 | 104 | Higher variance than Degree 5 |
+
+### Phase 1: Stratified Error by Clamped Coordinates & Importance Weighting
+
+An audit of coordinate clamping at domain boundaries ($\pm 1.0$) reveals an acute covariate shift between training (31.17% clamped coordinates) and test (51.25% clamped coordinates). Below is the 10-fold cross-validation performance of Degree 5 Lasso ($\alpha = 0.015$) vs. unregularized OLS stratified by the number of clamped coordinates ($k \in \{0, \dots, 6\}$):
+
+| Clamping Stratum ($k$) | Train Dist. ($N$) | Test Dist. ($N$) | Degree 5 Lasso ($\alpha=0.015$) MSE | Degree 5 OLS MSE |
+|---|:---:|:---:|:---:|:---:|
+| $k=0$ (Interior) | 11.2% (112) | 1.1% (11) | 0.2312 | 0.5155 |
+| $k=1$ | 30.6% (306) | 8.6% (86) | 0.3025 | 0.7617 |
+| $k=2$ | 29.5% (295) | 23.8% (238) | 0.3078 | 1.2026 |
+| $k=3$ | 19.2% (192) | 29.3% (293) | 0.3758 | 2.8806 |
+| $k=4$ | 7.9% (79) | 24.6% (246) | 0.5506 | 1.4410 |
+| $k=5$ | 1.4% (14) | 10.6% (106) | 0.4250 | 1.7151 |
+| $k=6$ (Boundary) | 0.2% (2) | 2.0% (20) | 0.2737 | 0.4236 |
+| **Overall CV MSE** | **100% (1000)** | — | **0.3314** | **1.3374** |
+| **Importance-Weighted MSE** | — | **100% (1000)** | **0.3979** (+20.1% vs CV) | **1.7462** (+30.6% vs CV) |
+
+**Key Takeaways:**
+1. **CV MSE is optimistic:** Because the training set overrepresents interior points ($71.3\%$ with $k \le 2$) where prediction error is lower, standard 10-fold CV MSE ($0.3314$) is optimistic for the true test distribution.
+2. **Importance-Weighted MSE:** Re-weighting the stratum errors by the test distribution $P_{\text{test}}(k)$ yields an expected test error of **$\text{MSE}_{\text{IW}} = 0.3979$** ($\approx 20.1\%$ higher).
+3. **Phase 2 Clamping:** In Phase 2, boundary clamping also occurs at $\pm 1.0$ (26.17% of train coordinates vs. 24.83% of test coordinates), but the distribution across strata $k \in \{0, 1, 2, 3\}$ is balanced between train and test ($40.5\%$ vs $42.9\%$ at $k=0$, $42.1\%$ vs $41.5\%$ at $k=1$, $15.8\%$ vs $13.8\%$ at $k=2$, $1.6\%$ vs $1.8\%$ at $k=3$), indicating absence of significant covariate shift.
 
 ### Phase 2: Thermal Reservoir Mapping (`var2`)
 | Model | Degree | Parameters ($p$) | 10-Fold CV MSE | 10-Fold CV $R^2$ | Active Terms | Notes |
@@ -156,6 +178,9 @@ python3 code/eda.py
 # 4. Regenerate evaluation figures from benchmark CSVs:
 python3 code/generate_final_models.py
 
-# 5. Re-run complete systematic benchmark sweep:
+# 5. Run stratified clamping & importance weighting audit:
+python3 code/experiments/clamping_stratified_analysis.py
+
+# 6. Re-run complete systematic benchmark sweep:
 python3 code/experiments/run_systematic_benchmark.py
 ```
