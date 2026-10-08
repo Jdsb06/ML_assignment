@@ -1,6 +1,6 @@
 # Machine Learning Assignment 1: Polynomial Regression
 
-**Author:** Jatin Sharma (Roll Number: `IMT2024022`)  
+**Author:** Jashandeep Singh Bedi (Roll Number: `IMT2024022`)  
 **Institution:** International Institute of Information Technology, Bangalore (IIIT-B)  
 **Course:** Machine Learning (SEM 5)  
 **Repository:** [https://github.com/Jdsb06/ML_assignment](https://github.com/Jdsb06/ML_assignment)
